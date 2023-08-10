@@ -1,0 +1,68 @@
+//Initialisation and Data pre-processing
+set initial_clusters = ["The initial clusters would be here"] //list of initial clusters already generated
+set stable_routes = ["clusters which satisfy the "]
+
+
+//Checking the cluster weekly gaps and learning demand patterns of the clusters.
+
+procedure Cluster_priority(cluster_list)
+    set priority_dictonary = {} //dictonary to store the priority of each cluster
+    //loop to check the weekly gaps and learning demand patterns of the clusters
+    for (clusters in initial_clusters) {
+        //for each cluster in the initial clusters list
+        if initial_clusters[clusters].weekly_gaps are "less/(some threshold)" || initial_clusters[clusters].learning_demand_pattern == "deterministic/some pattern" {
+            "set high priority to that cluster
+            and add it to the priority dictonary"
+        }
+        else-if initial_clusters[clusters].weekly_gaps are "less/(some threshold)" || initial_clusters[clusters].learning_demand_pattern == "stochastic/no obvious pattern" {    
+            "then set low priority to that cluster
+            and add it to the priority dictonary"
+        
+        }
+        else {
+            "set low priority to that cluster
+            and add it to the priority dictonary"
+        }
+        
+    }
+    "sort priority_dictonary in descending order of priority"
+    return priority_dictonary
+end procedure
+
+procedure AssignStableRoutes(priority_dictonary)
+    set stable_routes = {} //dict to store the stable routes for each cluster
+    set leftover_list = [] //list to store the leftover clusters
+    set dynamic_routes = [] //list to store the dynamic routes
+    for (clusters in priority_dictonary) {
+        //for each cluster in the priority dictonary
+        if demand of each week is satisfies the loading requirements, truck capacity and size requirements {
+            "assign the cluster a stable routes with number of stable routes in that cluster"
+            //for eg: {cluster_id: 1}
+            "increment the number of stable routes in that cluster by 1"
+            "check for the leftovers in each week and store them in a another list"
+        }
+        else {
+            "assign the clusters to dynamic routes and store them in another list"
+            "check for the leftovers in each week and store them in a another list"
+            "append those leftover (shortages of other suppliers) and assign them to dynamic routes."
+        }
+    }
+    return stable_routes,dynamic_routes
+end procedure
+
+procedure ImprovingsolutionwithHeuristic()
+    "use constructive heuristic based on some criterias to divide the shipping in daily basis"
+    "use improvement and meta heuristic to improve the solution"
+    
+    while (termination condition is not met) {
+        "keep using pertubation to escape the local optima and regenerate clusters and routes to improve the solution"
+    }
+    return solution
+end procedure
+
+main()
+    set priority_dictonary = Cluster_priority(initial_clusters)
+    set stable_routes,dynamic_routes = AssignStableRoutes(priority_dictonary)
+    set solution = ImprovingsolutionwithHeuristic()
+    return solution
+end main
