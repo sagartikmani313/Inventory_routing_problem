@@ -24,11 +24,6 @@ plt.plot(plant_latitude,plant_longitude,c="r",marker="s",label="plant")
 plt.scatter(supplier_locations["latitude"],supplier_locations["longitude"],c="b",label="supplier")
 
 df = pd.DataFrame({"latitude":supplier_locations["latitude"],"longitude":supplier_locations["longitude"]})
-# print(df)
-# df.iloc[0,0] = plant_latitude
-# df.iloc[0,1] = plant_longitude
-# df.iloc[0,2] = 0
-# print(df)
 
 def coords(l1,l2):
     return list(map(lambda x,y:(x,y),l1,l2))
@@ -73,7 +68,7 @@ s2s_distance = supplier_to_supplier_distances(supplier_dict)
 
 
 def variables():
-    return p2s_distance,s2s_distance
+    return p2s_distance,s2s_distance, plant_dict, supplier_dict
 
 # print(variables(supplier_coords,plant_coords,distance))
 #variables
