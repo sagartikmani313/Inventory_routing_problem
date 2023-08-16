@@ -33,12 +33,12 @@ A = fill_matrix(s,supplier_sublist,c)
 supplier_coords,plant_coords = psd.variables()
 distance = psd.distances(supplier_coords,plant_coords)
 
-def supplier_costs(distances):
+def plant_supplier_distance(distances):
     costs = {}
     for i,d in enumerate(distances):
         costs[i+1] = d
     return costs
-print(supplier_costs(distance))
+print(plant_supplier_distance(distance))
 
 def save_matrix(clusters,suppliers,matrix):
     # creating a dataframe for the matrix and saving it as an excel file
