@@ -30,7 +30,7 @@ def fill_matrix(list_of_suppliers,cluster_id,number_of_clusters):
 
 A = fill_matrix(s,supplier_sublist,c)
 
-p2s_distance, s2s_distance = psd.variables()
+p2s_distance, s2s_distance, plant_dict, supplier_dict = psd.variables()
 
 def save_matrix(clusters,suppliers,matrix):
     # creating a dataframe for the matrix and saving it as an excel file
