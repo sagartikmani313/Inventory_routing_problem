@@ -4,17 +4,23 @@ import time
 # import plant_supplier_distances as psd
 
 # st = time.time()
+def get_cluster_file(filename,sheetname):
+   
+    clusters = pd.read_excel(filename,sheet_name=sheetname)
+    clusters.drop(clusters.iloc[:,5:],inplace=True,axis=1)
+    clusters.fillna(0,inplace=True)
+    clusters = clusters.astype(np.int64)
+    return clusters
 
-clusters = pd.read_excel("region_3_compiled.xlsx",sheet_name="cluster_and_supplierID")
-suppliers = pd.read_excel("region_3_compiled.xlsx",sheet_name="suppliers_and_clusterID")
-clusters.drop(clusters.iloc[:,5:],inplace=True,axis=1)
-clusters.fillna(0,inplace=True)
-suppliers.fillna(0,inplace=True)
-clusters = clusters.astype(np.int64)
-suppliers = suppliers.astype(np.int64)
-supplier_sublist = suppliers.drop(columns=["supplier id","index of supplier","region","number of clusters containing the supplier"])
-c = len(clusters)
-s = len(suppliers)
+def get_supplier_file(filename,sheetname):
+    suppliers = pd.read_excel(filename,sheet_name=sheetname)
+    suppliers.fillna(0,inplace=True)
+    suppliers = suppliers.astype(np.int64)
+    supplier_sublist = suppliers.drop(columns=["supplier id","index of supplier","region","number of clusters containing the supplier"])
+    return suppliers, supplier_sublist
+# cluster_file = get_cluster_file("region_3_compiled.xlsx","cluster_and_supplierID")
+# supplier_file, supplier_sublist = get_supplier_file("region_3_compiled.xlsx","suppliers_and_clusterID")
+
 
 
 # filling the matrix with ones where the supplier is present in the cluster
@@ -28,9 +34,8 @@ def fill_matrix(list_of_suppliers,cluster_id,number_of_clusters):
                     mat[i,cluster_id.iloc[i,j]-1]=1
     return mat
 
-A = fill_matrix(s,supplier_sublist,c)
+# A = fill_matrix(len(supplier_file),supplier_sublist,len(cluster_file))
 
-# p2s_distance, s2s_distance, plant_dict, supplier_dict = psd.variables()
 
 def save_matrix(clusters,suppliers,matrix):
     # creating a dataframe for the matrix and saving it as an excel file
