@@ -23,12 +23,7 @@ plant_longitude = plant_locations.longitude
 plt.plot(plant_latitude,plant_longitude,c="r",marker="s",label="plant")
 plt.scatter(supplier_locations["latitude"],supplier_locations["longitude"],c="b",label="supplier")
 
-df = pd.DataFrame({"latitude":supplier_locations["latitude"],"longitude":supplier_locations["longitude"],
-                   "demand":rnd.randint(10,20,n)})
-# df.iloc[0,0] = plant_latitude
-# df.iloc[0,1] = plant_longitude
-# df.iloc[0,2] = 0
-# print(df)
+df = pd.DataFrame({"latitude":supplier_locations["latitude"],"longitude":supplier_locations["longitude"]})
 
 def coords(l1,l2):
     return list(map(lambda x,y:(x,y),l1,l2))
@@ -36,6 +31,8 @@ def coords(l1,l2):
 supplier_coords = coords(df["latitude"],df["longitude"])
 plant_coords = coords(plant_latitude,plant_longitude)
 
+supplier_dict = {i+1:j for i,j in enumerate(supplier_coords)}
+plant_dict = {i+1:j for i,j in enumerate(plant_coords)}
 
 # function to plot the plants and suppliers of region 3 on folium map
 def plot(_df):
@@ -54,17 +51,24 @@ def plot(_df):
     return map_obj.save("map.html")
 
 
-def distances(supplier,plant):
-    plant_supplier_distance = np.array([])
-    for point in supplier:
-        for base in plant:
-            distance = round(geodesic(point,base).km,2)
-            plant_supplier_distance = np.append(plant_supplier_distance,distance)
-    return plant_supplier_distance
+def plant_to_supplier_distances(supplier,plant):
+    distance = {(point,base):round(geodesic(plant.get(point),supplier.get(base)).km,2)
+                               for point in plant.keys() for base in supplier.keys()}
+    return distance
+p2s_distance = plant_to_supplier_distances(supplier_dict,plant_dict)
+
+def supplier_to_supplier_distances(suppliers):
+    distance = {(a,b):round(geodesic(suppliers.get(a),suppliers.get(b)).km,2) for a in suppliers.keys() 
+                                  for b in suppliers.keys() if a!=b}
+    return distance
+
+s2s_distance = supplier_to_supplier_distances(supplier_dict)
+
+
 
 
 def variables():
-    return supplier_coords,plant_coords
+    return p2s_distance,s2s_distance, plant_dict, supplier_dict
 
 # print(variables(supplier_coords,plant_coords,distance))
 #variables
