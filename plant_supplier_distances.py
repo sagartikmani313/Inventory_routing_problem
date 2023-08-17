@@ -20,8 +20,8 @@ plant_longitude = plant_locations.longitude
 
 
 # supplier coordinates on graph
-plt.plot(plant_latitude,plant_longitude,c="r",marker="s",label="plant")
-plt.scatter(supplier_locations["latitude"],supplier_locations["longitude"],c="b",label="supplier")
+# plt.plot(plant_latitude,plant_longitude,c="r",marker="s",label="plant")
+# plt.scatter(supplier_locations["latitude"],supplier_locations["longitude"],c="b",label="supplier")
 
 df = pd.DataFrame({"latitude":supplier_locations["latitude"],"longitude":supplier_locations["longitude"]})
 
@@ -69,6 +69,8 @@ s2s_distance = supplier_to_supplier_distances(supplier_dict)
 
 def variables():
     return p2s_distance,s2s_distance, plant_dict, supplier_dict
+
+
 
 # print(variables(supplier_coords,plant_coords,distance))
 #variables

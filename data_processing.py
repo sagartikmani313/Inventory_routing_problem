@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 import time
-import plant_supplier_distances as psd
+# import plant_supplier_distances as psd
 
-st = time.time()
+# st = time.time()
 
 clusters = pd.read_excel("region_3_compiled.xlsx",sheet_name="cluster_and_supplierID")
 suppliers = pd.read_excel("region_3_compiled.xlsx",sheet_name="suppliers_and_clusterID")
@@ -30,7 +30,7 @@ def fill_matrix(list_of_suppliers,cluster_id,number_of_clusters):
 
 A = fill_matrix(s,supplier_sublist,c)
 
-p2s_distance, s2s_distance, plant_dict, supplier_dict = psd.variables()
+# p2s_distance, s2s_distance, plant_dict, supplier_dict = psd.variables()
 
 def save_matrix(clusters,suppliers,matrix):
     # creating a dataframe for the matrix and saving it as an excel file
@@ -45,6 +45,6 @@ def save_matrix(clusters,suppliers,matrix):
     cluster_matrix.to_excel("cluster_matrix.xlsx",sheet_name="cluster_matrix")
 
 
-et=time.time()
-time_taken = round(et-st,2)
-print(f"Execution time  : {time_taken} seconds")
+# et=time.time()
+# time_taken = round(et-st,2)
+# print(f"Execution time  : {time_taken} seconds")
