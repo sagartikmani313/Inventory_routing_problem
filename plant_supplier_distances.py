@@ -7,16 +7,23 @@ from geopy.distance import geodesic
 
 rnd =  np.random
 rnd.seed(88775)
-plant_locations = pd.read_excel("region_3_compiled.xlsx",sheet_name="plant_coordinates")
-supplier_locations = pd.read_excel("region_3_compiled.xlsx",sheet_name="supplier_coordinates")
-supplier_locations = supplier_locations.drop("supplier id",axis=1)
-plant_locations = plant_locations.drop("plant_id",axis=1)
-n = len(supplier_locations)
+def get_plant_locationFile(filename,sheetname):
+    plant_file = pd.read_excel(filename,sheet_name=sheetname)
+    plant_file = plant_file.drop("plant_id",axis=1)
+    return plant_file
+def get_supplier_locationFile(filename,sheetname):
+    supplier_file = pd.read_excel("region_3_compiled.xlsx",sheet_name=sheetname)
+    supplier_file = supplier_file.drop("supplier id",axis=1)
+    return supplier_file
+    # n = len(supplier_locations)
+
+plant_locations = get_plant_locationFile("region_3_compiled.xlsx","plant_coordinates")
+supplier_locations = get_supplier_locationFile("region_3_compiled.xlsx","supplier_coordinates") 
 
 
 # plant coordinates
-plant_latitude = plant_locations.latitude
-plant_longitude = plant_locations.longitude
+# plant_latitude = plant_locations.latitude
+# plant_longitude = plant_locations.longitude
 
 
 # supplier coordinates on graph
@@ -24,42 +31,43 @@ plant_longitude = plant_locations.longitude
 # plt.scatter(supplier_locations["latitude"],supplier_locations["longitude"],c="b",label="supplier")
 
 df = pd.DataFrame({"latitude":supplier_locations["latitude"],"longitude":supplier_locations["longitude"]})
+df2 = pd.DataFrame({"latitude":plant_locations["latitude"],"longitude":plant_locations["longitude"]})
 
 def coords(l1,l2):
     return list(map(lambda x,y:(x,y),l1,l2))
 
-supplier_coords = coords(df["latitude"],df["longitude"])
-plant_coords = coords(plant_latitude,plant_longitude)
-
-supplier_dict = {i+1:j for i,j in enumerate(supplier_coords)}
-plant_dict = {i+1:j for i,j in enumerate(plant_coords)}
+def get_locations(data,data2):
+    supplier_coords = coords(data["latitude"],data["longitude"])
+    plant_coords = coords(data2["latitude"],data2["longitude"])
+    supply = {i+1:j for i,j in enumerate(supplier_coords)}
+    plant = {i+1:j for i,j in enumerate(plant_coords)}
+    return supply,plant
+supplier_dict,plant_dict = get_locations(df,df2)
 
 # function to plot the plants and suppliers of region 3 on folium map
-def plot(_df):
-    map_obj = folium.Map(location=[plant_latitude,plant_longitude],zoom_start=10)
-    for i, r in _df.iterrows():
-        lat=r["latitude"]
-        lon=r["longitude"]
+# def plot(_df):
+#     map_obj = folium.Map(location=[plant_latitude,plant_longitude],zoom_start=10)
+#     for i, r in _df.iterrows():
+#         lat=r["latitude"]
+#         lon=r["longitude"]
 
-        if lat==plant_latitude and lon==plant_longitude:
-            plant_icon = folium.Icon(color="red",icon="home",prefix="fa")
-            marker=folium.Marker(location=[lat,lon],icon=plant_icon)
-        else:
-            supplier_icon = folium.Icon(color="blue",icon="truck",prefix="fa")
-            marker=folium.Marker(location=[lat,lon],icon=supplier_icon)
-        marker.add_to(map_obj)
-    return map_obj.save("map.html")
+#         if lat==plant_latitude and lon==plant_longitude:
+#             plant_icon = folium.Icon(color="red",icon="home",prefix="fa")
+#             marker=folium.Marker(location=[lat,lon],icon=plant_icon)
+#         else:
+#             supplier_icon = folium.Icon(color="blue",icon="truck",prefix="fa")
+#             marker=folium.Marker(location=[lat,lon],icon=supplier_icon)
+#         marker.add_to(map_obj)
+#     return map_obj.save("map.html")
 
 
 def plant_to_supplier_distances(supplier,plant):
-    distance = {(point,base):round(geodesic(plant.get(point),supplier.get(base)).km,2)
-                               for point in plant.keys() for base in supplier.keys()}
+    distance = {point:{base:round(geodesic(plant.get(point),supplier.get(base)).km,2) for base in supplier.keys()} for point in plant.keys()}
     return distance
 p2s_distance = plant_to_supplier_distances(supplier_dict,plant_dict)
 
 def supplier_to_supplier_distances(suppliers):
-    distance = {(a,b):round(geodesic(suppliers.get(a),suppliers.get(b)).km,2) for a in suppliers.keys() 
-                                  for b in suppliers.keys() if a!=b}
+    distance = {a:{b:round(geodesic(suppliers.get(a),suppliers.get(b)).km,2) for b in suppliers.keys() if a!=b} for a in suppliers.keys()}
     return distance
 
 s2s_distance = supplier_to_supplier_distances(supplier_dict)
