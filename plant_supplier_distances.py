@@ -10,10 +10,12 @@ rnd.seed(88775)
 def get_plant_locationFile(filename,sheetname):
     plant_file = pd.read_excel(filename,sheet_name=sheetname)
     plant_file = plant_file.drop("plant_id",axis=1)
+    print("Plant file processed")
     return plant_file
 def get_supplier_locationFile(filename,sheetname):
     supplier_file = pd.read_excel("region_3_compiled.xlsx",sheet_name=sheetname)
     supplier_file = supplier_file.drop("supplier id",axis=1)
+    print("Supplier file processed")
     return supplier_file
     # n = len(supplier_locations)
 
@@ -41,6 +43,7 @@ def get_locations(data,data2):
     plant_coords = coords(data2["latitude"],data2["longitude"])
     supply = {i+1:j for i,j in enumerate(supplier_coords)}
     plant = {i+1:j for i,j in enumerate(plant_coords)}
+    print("Locations processed")
     return supply,plant
 supplier_dict,plant_dict = get_locations(df,df2)
 
@@ -63,11 +66,13 @@ supplier_dict,plant_dict = get_locations(df,df2)
 
 def plant_to_supplier_distances(supplier,plant):
     distance = {point:{base:round(geodesic(plant.get(point),supplier.get(base)).km,2) for base in supplier.keys()} for point in plant.keys()}
+    print("Plant to supplier Distances processed")
     return distance
 p2s_distance = plant_to_supplier_distances(supplier_dict,plant_dict)
 
 def supplier_to_supplier_distances(suppliers):
     distance = {a:{b:round(geodesic(suppliers.get(a),suppliers.get(b)).km,2) for b in suppliers.keys() if a!=b} for a in suppliers.keys()}
+    print("Supplier to supplier Distances processed")
     return distance
 
 s2s_distance = supplier_to_supplier_distances(supplier_dict)
@@ -76,6 +81,7 @@ s2s_distance = supplier_to_supplier_distances(supplier_dict)
 
 
 def variables():
+    print("Variables processed")
     return p2s_distance,s2s_distance, plant_dict, supplier_dict
 
 
