@@ -21,6 +21,7 @@ def get_demand_file(filename,sheetname):
     conditions2 = [demand_file["day"]<=7,demand_file["day"]<=14,demand_file["day"]<=21,demand_file["day"]<=28]
     weeks = np.array([x for x in range(1,5)])
     demand_file["Week"] = np.select(conditions2, weeks)
+    demand_file =  demand_file[(demand_file["need"]!=0) | (demand_file["stock init"]!=0)]
     print("Demand file processed")
     return demand_file
 
@@ -30,7 +31,7 @@ def get_supply_files(filename,sheetname):
     supply file with the week column added to it.'''
 
     supply_file = pd.read_excel(filename,sheet_name=sheetname)
-    supply_file.drop(supply_file.iloc[:,6:],inplace=True,axis=1)
+    # supply_file.drop(supply_file.iloc[:,6:],inplace=True,axis=1)
     supply_file = supply_file[supply_file["day"]<=28]
     supply_file = supply_file[supply_file['stock init']!=0]
     conditions = [supply_file["day"]<=7,supply_file["day"]<=14,supply_file["day"]<=21,supply_file["day"]<=28]
@@ -46,7 +47,6 @@ supply_info = get_supply_files("region_3_compiled.xlsx","plant_supply")
 '''getting the cluster and supplier file from different module'''
 cluster_file = dp.get_cluster_file("region_3_compiled.xlsx","cluster_and_supplierID")
 supplier_file, supplier_sublist = dp.get_supplier_file("region_3_compiled.xlsx","suppliers_and_clusterID")
-
 
 #static variables
 truck_capacity = 13.4 #in linear meters
@@ -229,10 +229,10 @@ def generating_priority_metric(errors_of_cluster,stable_route_status,clusters):
         else:
             sorted_index = next(i for i, (_,error) in enumerate(sorted_clusters_by_errors) if error == errors_of_cluster[c])
             priority_metric[c] = (0.5 - ((0.5/clusters)*sorted_index)) + 0.5*stable_route_status[c]
-    sorted_priority_metric = sorted(priority_metric.items(),key=lambda x:x[1],reverse=True)
+    # sorted_priority_metric = sorted(priority_metric.items(),key=lambda x:x[1],reverse=True)
     # pd.DataFrame(sorted_priority_metric).to_excel("priority_metric.xlsx")
     print("Priority metrics generated")
-    return sorted_priority_metric
+    return priority_metric
 
 
 
