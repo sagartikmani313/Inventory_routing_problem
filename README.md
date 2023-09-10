@@ -1,5 +1,5 @@
 # Renault_Project
-## By: Sagar Tikmani MSc Business Analytics Post-graduate Student
+## By: Sagar Tikmani\nMSc Business Analytics Post-graduate Student
 ### This repository contains files for the Renault Empty Packaging Dispatching and Routing Problem. 
 
 ### Problem Description:
