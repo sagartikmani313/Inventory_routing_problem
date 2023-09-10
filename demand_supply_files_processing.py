@@ -4,7 +4,7 @@ import time
 import math
 
 '''self made modules'''
-import data_processing as dp 
+import data_processing as dp
 import plant_supplier_distances as psd
 
 from collections import defaultdict
