@@ -18,10 +18,10 @@ def get_demand_file(filename,sheetname):
 
     demand_file = pd.read_excel(filename,sheet_name=sheetname)
     demand_file = demand_file[demand_file["day"]<=28]
-    conditions2 = [demand_file["day"]<=7,demand_file["day"]<=14,demand_file["day"]<=21,demand_file["day"]<=28]
+    conditions = [demand_file["day"]<=7,demand_file["day"]<=14,demand_file["day"]<=21,demand_file["day"]<=28]
     weeks = np.array([x for x in range(1,5)])
-    demand_file["Week"] = np.select(conditions2, weeks)
-    demand_file =  demand_file[(demand_file["need"]!=0) | (demand_file["stock init"]!=0)]
+    demand_file["Week"] = np.select(conditions, weeks)
+    # demand_file =  demand_file[(demand_file["need"]!=0) | (demand_file["stock init"]!=0)]
     print("Demand file processed")
     return demand_file
 
@@ -33,7 +33,7 @@ def get_supply_files(filename,sheetname):
     supply_file = pd.read_excel(filename,sheet_name=sheetname)
     # supply_file.drop(supply_file.iloc[:,6:],inplace=True,axis=1)
     supply_file = supply_file[supply_file["day"]<=28]
-    supply_file = supply_file[supply_file['stock init']!=0]
+    # supply_file = supply_file[supply_file['stock init']!=0]
     conditions = [supply_file["day"]<=7,supply_file["day"]<=14,supply_file["day"]<=21,supply_file["day"]<=28]
     weeks = np.array([x for x in range(1,5)])
     supply_file["Week"] = np.select(conditions, weeks)
@@ -52,7 +52,7 @@ supplier_file, supplier_sublist = dp.get_supplier_file("region_3_compiled.xlsx",
 truck_capacity = 13.4 #in linear meters
 loading_capacity_stable = 11 #in linear meters
 loading_capacity_dynamic = 3 #in linear meters
-Trucks = 6
+Trucks = 30
 packaging_type = len(demand_info.pack.unique()) 
 total_suppliers = len(supplier_file) #56
 total_clusters = len(cluster_file) #1286
@@ -105,14 +105,14 @@ def get_cluster_truck_capacity(cwd, capacity, number_of_trucks, number_of_cluste
 
         for truck_capacity in truck_capacities:
             # error_deviation = sum(abs(cwd[cluster][week] - truck_capacity) for week in range(1, weeks + 1))
-            '''here RMSE and Sum of absolute errors both were used to calculate the error deviation. Both had the same answer but 
+            '''here RMSE and Sum of absolute errors both were used to calculate the error u. Both had the same answer but 
             RMSE was selected as the error metric, as RMSE is a suitable metric, that balances both smaller and larger deviations.'''
             sum_of_squared_differences = sum((cwd[cluster][week] - truck_capacity)**2 for week in range(1, weeks + 1))
             error_deviation = math.sqrt(sum_of_squared_differences)/weeks
             '''
-            here we are calculating the error deviation for each truck capacity and then we are selecting the truck capacity 
-            which has the least error deviation. The error metric that has been used is RMSE, as RMSE is a suitable metric, that balances
-            both smaller and larger deviations. It's sensitive to both small and large deviations. Which helps to ensure that deviation of all
+            here we are calculating the error u for each truck capacity and then we are selecting the truck capacity 
+            which has the least error u. The error metric that has been used is RMSE, as RMSE is a suitable metric, that balances
+            both smaller and larger deviations. It's sensitive to both small and large deviations. Which helps to ensure that u of all
             magnitudes are penalized equally.
             '''
             if error_deviation < min_error_deviation:
@@ -135,8 +135,9 @@ def stable_route_status(weekly_demand, vehicle_capacity_for_cluster,clusters,
     '''This function takes the cluster weekly demand, cluster truck capacity, number of clusters, truck capacity, cluster-supplier matrix,
     plant to supplier distance, supplier to supplier distance, number of suppliers, supplier pairs, number of weeks and minimum truck capacity
     as input and returns the stable route status as output in the form of a dictionary.'''
-    
+        
     stable_route_dict = {cluster:0 for cluster in range(1,clusters+1)}
+    dynamic_route_dict = {cluster:0 for cluster in range(1,clusters+1)}
 
     for cluster in range(1,clusters+1):
         
@@ -144,15 +145,18 @@ def stable_route_status(weekly_demand, vehicle_capacity_for_cluster,clusters,
         that are in the cluster'''
 
         cluster_supplier_indices = [s for s in range(1,suppliers+1) if cluster_matrix[cluster][s]==1]
+        # print(cluster_supplier_indices)
         sum_of_distances = sum(plant2supplier[plant][supplier] for plant in plant2supplier for supplier in cluster_supplier_indices)
-        
+        # print(sum_of_distances)
         '''calculating the sum of distances between all the possible supplier pairs 
         that are in the cluster and are not the same'''
 
         array_of_supplier_distances = [supplier2supplier[i][j] for i,j in supplier_pairs if cluster_matrix[cluster][i]==1
                                               and cluster_matrix[cluster][j]==1]
+        # print(array_of_supplier_distances)
         
         maximum_distance = max(array_of_supplier_distances) if array_of_supplier_distances else 0
+        # print(maximum_distance)
         
         for t in range(1,time+1):
             cwd = weekly_demand[cluster][t]
@@ -169,19 +173,27 @@ def stable_route_status(weekly_demand, vehicle_capacity_for_cluster,clusters,
             '''the above calculations ensure that the demand for transportation in a cluster is neither too low (below the minimum truck capacity
             utilisation) nor too high (exceeding the combined capacity of two trucks) Its a way of optimising the truck usage to balance demand
             and capacity, considering the constraints set by minimum truck capacity and maximum truck capacity.'''
-
+            
             if cwd >= lower_demand_bound and cwd <= upper_demand_bound:
                 if maximum_distance <= 200 and sum_of_distances <= 1700:
                     stable_route_dict[cluster] = 1
+                    dynamic_route_dict[cluster] = 1
                 else:
+                    dynamic_route_dict[cluster] = 0
                     stable_route_dict[cluster] = 0
-    
+            elif sum_of_distances<=1700:
+                dynamic_route_dict[cluster] = 1
+                stable_route_dict[cluster] = 0
+            else:
+                dynamic_route_dict[cluster] = 0
+                stable_route_dict[cluster] = 0
+
     # Saving the stable route status in an excel file
     # stable_route_df = pd.DataFrame(stable_route_dict.items(),index=stable_route_dict.keys(),columns=["Cluster","Stable Route"])
     # stable_route_df.to_excel("stable_route_status.xlsx")
 
     print("Stable route status generated")
-    return stable_route_dict
+    return stable_route_dict, dynamic_route_dict
 
 
 
@@ -191,10 +203,6 @@ def get_sum_of_error_deviations(weekly_demand, vehicle_capacity_for_cluster,clus
     the sum of error deviations as output in the form of a dictionary.'''
     
     sum_of_error_deviations = {c:0 for c in range(1,clusters+1)}
-    # for c in range(1,clusters+1):
-    #     for t in range(1,time+1):
-    #         sum_of_error_deviations[c] += (abs(weekly_demand[c][t] - vehicle_capacity_for_cluster[c]))
-    # print(sum_of_error_deviations)
     for c in range(1,clusters+1):
         demand = weekly_demand[c]
         capacity = vehicle_capacity_for_cluster[c]
@@ -212,10 +220,10 @@ def generating_priority_metric(errors_of_cluster,stable_route_status,clusters):
     '''This function takes the sum of error deviations, stable route status and number of clusters as input and returns the priority metric
     as output in the form of a dictionary.
     The priority metric is calculated as follows:   
-    1. The cluster with the minimum error deviation is given a priority of 0.5
-    2. The cluster with the maximum error deviation is given a priority of 1
+    1. The cluster with the minimum error u is given a priority of 0.5
+    2. The cluster with the maximum error u is given a priority of 1
     3. The clusters in between are given a priority of 0.5 - ((0.5/clusters)*index of the cluster in the sorted list of 
-    clusters by error deviation.
+    clusters by error u.
     4. The priority metric is then multiplied by the stable route status of the cluster.
     '''
 
@@ -238,11 +246,16 @@ def generating_priority_metric(errors_of_cluster,stable_route_status,clusters):
 
 
 weekly_demand_of_cluster = cluster_weekly_demand(total_clusters,total_suppliers,demand_info,matrix,Weeks)
+
 cluster_truck_capacity = get_cluster_truck_capacity(weekly_demand_of_cluster,truck_capacity,Trucks,total_clusters,Weeks)
-stable_route_info = stable_route_status(weekly_demand_of_cluster,cluster_truck_capacity,total_clusters,truck_capacity,
+
+stable_route_info, dynamic_route_info = stable_route_status(weekly_demand_of_cluster,cluster_truck_capacity,total_clusters,truck_capacity,
                     matrix,p2s_distance,s2s_distance,total_suppliers,Arcs,Weeks,loading_capacity_stable)
+
 cluster_error_total = get_sum_of_error_deviations(weekly_demand_of_cluster,cluster_truck_capacity,total_clusters,Weeks)
+
 cluster_importance = generating_priority_metric(cluster_error_total,stable_route_info,total_clusters)
+
 print("All files processed")
 
 

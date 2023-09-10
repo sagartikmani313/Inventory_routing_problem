@@ -17,8 +17,8 @@ def get_supplier_file(filename,sheetname):
     supplier_sublist = suppliers.drop(columns=["supplier id","index of supplier","region","number of clusters containing the supplier"])
     print("Supplier and sublist file processed")
     return suppliers, supplier_sublist
-# cluster_file = get_cluster_file("region_3_compiled.xlsx","cluster_and_supplierID")
-# supplier_file, supplier_sublist = get_supplier_file("region_3_compiled.xlsx","suppliers_and_clusterID")
+cluster_file = get_cluster_file("region_3_compiled.xlsx","cluster_and_supplierID")
+supplier_file, supplier_sublist = get_supplier_file("region_3_compiled.xlsx","suppliers_and_clusterID")
 
 
 
@@ -38,3 +38,4 @@ def fill_matrix(no_of_suppliers,cluster_id,number_of_clusters):
     print("Cluster matrix created")
     return mat
 
+# mat = fill_matrix(len(supplier_file),supplier_sublist,len(cluster_file))
