@@ -1,6 +1,6 @@
-# Renault_Project
+# Inventory Routing Optimisation Problem
 ## By: Sagar Tikmani: MSc Business Analytics
-### This repository contains files for the Renault Empty Packaging Dispatching and Routing Problem. 
+### This repository contains files for the Empty Packaging Dispatching and Routing Problem. 
 
 ### Problem Description:
 #### Suppliers deliver parts to plants with full packaging. The plants must then return empty packaging to suppliers who need them, ideally to the nearest suppliers. 30 types of standard packaging are shared among all the suppliers.
